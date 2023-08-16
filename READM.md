@@ -30,3 +30,4 @@ Constraints
 
 - when a client tries to close a transaction, it needs to see if the transaction document is still :open. If not, unwind the transaction and retry.
 
+- epoch ids have a natural order
