@@ -122,3 +122,65 @@
     (is (= fully-processed-data
            (consolidate pre-consolidation "e-1")))))
 
+
+
+(def beginning {:epoch {"e-0" {}}})
+
+(def after-create-transaction-file-doc 
+  {:epoch {"e-0" {:state :open}}
+   :txf {"txf-0" {:state :open}}})
+
+(def after-registration-of-transaction-doc
+  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
+   :txf {"txf-0" {:state :open}} })
+
+(def after-client-starts-transction
+  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
+   :txf {"txf-0" {:state :open :pending {"tx-0"}}} }
+  )
+
+(def after-client-has-registered-payer-doc-for-transaction
+  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
+   :txf {"txf-0" {:state :open :pending {"tx-0" ["payer"]}}} }
+  )
+
+(def after-client-has-reserved-amt-on-payer-doc
+  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
+   :txf {"txf-0" {:state :open :pending {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
+   :accts {"payer" {"e-0" {:value 0 :pending #{"tx-0"}}}}}
+  )
+
+
+(def pre-mark-as-consolidated
+  {:epoch {"e-0" {:state :consolidated }
+           "e-1" {:state :closed :txfs ["txf-0"]}
+           }
+   :txf {"txf-0" {:state :closed :procesed {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
+   :accts {"payer" {"e-1" -100} 
+           "payee" {"e-1" 100}}})
+
+(defn update-doc
+  [db col doc-id f & args]
+  (apply update-in db [col doc-id] f args))
+
+(defn mark-epoch-as-consolidated
+  [db epoch]
+  (update-doc db :epoch epoch epoch/consolidate)
+  )
+
+
+(def end-result
+  {:epoch {"e-0" {:state :consolidated }
+           "e-1" {:state :consolidated :txfs ["txf-0"]}
+           }
+   :txf {"txf-0" {:state :closed :procesed {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
+   :accts {"payer" {"e-1" -100} 
+           "payee" {"e-1" 100}}})
+
+(deftest mark-epoch-as-consolidated-test
+  (testing "marking epoch as consolidated"
+    (is (= end-result
+           (mark-epoch-as-consolidated pre-mark-as-consolidated "e-1"))))
+  )
+
+

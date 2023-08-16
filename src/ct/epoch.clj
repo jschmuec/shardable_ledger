@@ -17,11 +17,11 @@
 
 (defn transition
   [from to epoch]
-  (assoc epoch :status to))
+  (assoc epoch :state to))
 
 (s/fdef transition
   :args (s/and (s/cat :from any? :to any? :epoch map?)
-               #(= (:from %) (:status (:epoch %))))
+               #(= (:from %) (:state (:epoch %))))
   )
 
 (defn close
@@ -34,7 +34,7 @@
 
 (comment
   (st/instrument)
-  (consolidate {:status :closed})
-  (consolidate {:status :open}) ;; fails
+  (consolidate {:state :closed})
+  (consolidate {:state :open}) ;; fails
 ;;
 )
