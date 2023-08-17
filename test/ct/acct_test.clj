@@ -39,7 +39,7 @@
   (let [last-balance (or (get-in acct [:vs epoch]) 0)]
     (if-let [amt (get-in acct [:pending tx])]
       (-> acct
-          (assoc-in [:value epoch] (+ last-balance amt))
+          (assoc-in [:vs epoch] (+ last-balance amt))
           (update :pending #(dissoc % tx)))
       acct))
   )
@@ -48,11 +48,10 @@
 
 (deftest consolidate-test
   (testing "consolidating a single transaction"
-    (is (= -100
-           (->
-               (consolidate after-reservation "e1" "tx-1")
-               (acct/available-amt)
-               )))))
+    (is (= {:vs {"e-0" 0 "e1" -100}
+            :pending {}}
+           (consolidate after-reservation "e1" "tx-1")
+           ))))
 
 (deftest available-amt-test
   (testing "available amt after an initial reservation"
