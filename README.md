@@ -10,7 +10,7 @@ Each credit transfer is decompossed into multiple steps:
 
 The solution relies on the fact that these operations are commutative, i.e. it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
 
-Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
+This is currently under construction to transfer to a new simplified storage structure. See `acct_test.clj` for examples. Later you can start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
 # Algorithm 
 
