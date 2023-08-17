@@ -24,4 +24,9 @@
           (assoc-in [:vs epoch] (+ last-balance amt))
           (update :pending #(dissoc % tx)))
       acct))
+
   )
+
+(defn balance
+  [acct epoch]
+  (get-in acct [:vs epoch]))

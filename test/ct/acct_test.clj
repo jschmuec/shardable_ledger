@@ -57,3 +57,14 @@
       -100
       (acct/available-amt after-reservation))))
 )
+
+
+
+(deftest balance-test
+  (testing "balance with existing epoch is correct"
+    (is 
+     (= 1
+        (acct/balance {:vs {"e-0" 1}} "e-0"))))
+  (testing "balance for non-existing epoch is nil"
+    (is (= nil
+           (acct/balance {:vs {"e-0" 1}} "e-1")))))
