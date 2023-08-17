@@ -8,11 +8,39 @@ Each credit transfer is decompossed into multiple steps:
 2) Advise amount on payee account
 3) _Batch_ consolidation of all pending amounts into a consistent balance sheet.
 
+The solution relies on the fact that these operations are commutative, i.e. it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
+
 Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
 # Algorithm 
 
-(not as implemented) 
+## On connect
+
+1. Create transaction file
+2. Register transaction file in latest open epoch, if there is no open epoch create one
+
+## On disconnect
+
+1. Flag transaction file as closed
+
+## For each transaction
+
+1. Read transaction file to see if has been closed
+2. If transaction file is closed -> Retry with new connection
+3. Create transaction id and register in transaction file as open
+4. Create transaction steps as pending in all the accts
+5. Check if transaction file is still :open. If not revert transaction -> Retry
+5. Mark transaction as closed in transaction file
+
+## On consolidation
+
+1. Take the first closed epoch
+1. Create a new epoch
+2. Mark epoch as :closed
+3. Mark all transaction files as :closed
+4. Consolidate all :closed transactions in transaction files
+5. Mark epoch as :consolidated
+
 
 Contstraints
 ---
@@ -22,4 +50,4 @@ Contstraints
 - Epochs are ordered
 - The available balance is the sum of the latest epoch value and all pending transactions
 
-Note: We don't need pending transactions on an acct but it makes unwinding transactions that have not been committed more complicated.
+Note: We don't really need pending transactions on an acct but it makes unwinding transactions that have not been committed more complicated. It's also a nice visibility feature.
