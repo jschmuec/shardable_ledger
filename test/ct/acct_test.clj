@@ -48,7 +48,15 @@
     (is (=
          after-consolidation
          (acct/consolidate after-reservation "e1" "tx-1")
-         ))))
+         )))
+  (testing "consolidate a second transaction without affecting the first"
+    (is (=
+         {:vs {"e0" 100} :pending {"tx-2" -1000}}
+         (acct/consolidate {:pending {"tx-1" 100, "tx-2" -1000}} "e0" "tx-1"))))
+  (testing "consolidating is idempotent"
+    (is (=
+         {:vs {"e0" 100} :pending {"tx-2" -1000}}
+         (acct/consolidate {:vs {"e0" 100} :pending {"tx-2" -1000}} "e0" "tx-1")))))
 
 (deftest available-amt-test
   (testing "available amt after an initial reservation"
@@ -57,8 +65,6 @@
       -100
       (acct/available-amt after-reservation))))
 )
-
-
 
 (deftest balance-test
   (testing "balance with existing epoch is correct"
