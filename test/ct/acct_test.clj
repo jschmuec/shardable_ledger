@@ -34,24 +34,21 @@
            (apply-if-not 1 odd? (fn [x] :result))))))
 
 
-(defn consolidate
-  [acct epoch tx]
-  (let [last-balance (or (get-in acct [:vs epoch]) 0)]
-    (if-let [amt (get-in acct [:pending tx])]
-      (-> acct
-          (assoc-in [:vs epoch] (+ last-balance amt))
-          (update :pending #(dissoc % tx)))
-      acct))
-  )
+(def after-consolidation
+   {:vs {"e-0" 0 "e1" -100}
+            :pending {}})
 
-(consolidate after-reservation "e1"  "tx-1")
+(deftest after-consolidation-test
+  (testing "available balance is -100"
+    (is (= -100
+           (acct/available-amt after-consolidation)))))
 
 (deftest consolidate-test
-  (testing "consolidating a single transaction"
-    (is (= {:vs {"e-0" 0 "e1" -100}
-            :pending {}}
-           (consolidate after-reservation "e1" "tx-1")
-           ))))
+  (testing "consolidating a single static transaction"
+    (is (=
+         after-consolidation
+         (acct/consolidate after-reservation "e1" "tx-1")
+         ))))
 
 (deftest available-amt-test
   (testing "available amt after an initial reservation"
@@ -59,8 +56,4 @@
      (=
       -100
       (acct/available-amt after-reservation))))
-
-  (let [after-consolidation {:values {"e-0" 100}}]
-   )  
-
 )

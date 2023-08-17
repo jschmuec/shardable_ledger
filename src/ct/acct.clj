@@ -11,6 +11,17 @@
 
 (defn available-amt
   [acct]
-  (let [latest-balance (or (-> acct :value vals last) 0)]
+  (let [latest-balance (or (-> acct :vs vals last) 0)]
     (reduce + latest-balance
             (-> acct :pending vals))))
+
+
+(defn consolidate
+  [acct epoch tx]
+  (let [last-balance (or (get-in acct [:vs epoch]) 0)]
+    (if-let [amt (get-in acct [:pending tx])]
+      (-> acct
+          (assoc-in [:vs epoch] (+ last-balance amt))
+          (update :pending #(dissoc % tx)))
+      acct))
+  )
