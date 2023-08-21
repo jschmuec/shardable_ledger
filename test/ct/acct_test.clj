@@ -79,3 +79,10 @@
   (testing "balance for non-existing epoch is nil"
     (is (= nil
            (acct/balance {:vs {"e-0" 1}} "e-1")))))
+
+(deftest advise-test
+  (testing "available amt changed after advise"
+    (is (=
+         1100
+         (acct/available-amt 
+          (acct/advise {:vs {"e0" 0} :pending {"some tx" 1000}} "tx-1" 100))))))

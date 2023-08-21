@@ -9,6 +9,10 @@
 
 (s/def ::acct map?)
 
+(defn advise
+  [acct tx amt]
+  (assoc-in acct [:pending tx] amt))
+
 (defn available-amt
   [acct]
   (let [latest-balance (or (-> acct :vs vals last) 0)]
