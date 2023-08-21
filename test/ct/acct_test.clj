@@ -52,7 +52,12 @@
   (testing "consolidate a second transaction without affecting the first"
     (is (=
          {:vs {"e0" 100} :pending {"tx-2" -1000}}
-         (acct/consolidate {:pending {"tx-1" 100, "tx-2" -1000}} "e0" "tx-1"))))
+         (acct/consolidate
+          {:pending {"tx-1" 100, "tx-2" -1000}}
+          "e0"
+          "tx-1"))))
+
+
   (testing "consolidating is idempotent"
     (is (=
          {:vs {"e0" 100} :pending {"tx-2" -1000}}

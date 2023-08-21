@@ -13,174 +13,19 @@
             [ct.epoch :as epoch]
 ))
 
-(defn get-latest-epoch
-  "returns the id of the latest consolidated epoch"
-  [db]
-  (-> db :meta :current))
-
-(defn get-value
-  "returns the value of a document"
-  [db col doc epoch]
-  (-> db
-      (get col)
-      (get doc)
-      (get epoch)
-      (get :value)))
-
-(defn get-available-amt
-  [db acct]
-  (-> db
-      :accts
-      (get acct)
-      vals
-      last
-      acct/calculate-pending))
-
-(defn close-epoch
-  [db epoch]
-  (update-in db [:epochs epoch] epoch/close))
-
-(s/def ::db map?)
-
-(do 
-  (defn set-tx-to-processed
-    [db epoch tx-id]
-    (update-in db [:epochs epoch] epoch/flag-tx-as-processed tx-id))
-
-  (s/fdef set-tx-to-processed
-    :args (s/cat :db ::db :epoch any? :tx-id any?))
-  (st/instrument))
-
-(defn process-txs
-  [db epoch tx-id]
-  (reduce #(update-in %1 [:accts %2] acct/update-acct-balance epoch tx-id)
-          db
-          (get-in db [:epochs epoch :pending tx-id])))
-
-(defn consolidate
-  [db epoch]
-  (-> db 
-      (process-txs "e-1" "tx-1")
-      (set-tx-to-processed "e-1" "tx-1")
-      (update-in [:epochs "e-1"] epoch/consolidate)))
-
-(def pre-close-epoch
-  {:meta {:current "e-0"}
-   :epochs {"e-1" {:status :open 
-                   :pending {"tx-1" ["acct-0" "payer"]}}}
-   :accts {"acct-0" {"e-0" {:value 100 :pending {"tx-1" 100}} }
-           "payer" {"e-0" {:value 100 :pending {"tx-1" -100}}}}
-   })
-
-(def pre-consolidation
-  {:meta {:current "e-0"}
-   :epochs {"e-1" {:status :closed ;; meaning we cannot add more transactions to it
-                   :pending {"tx-1" ["acct-0" "payer"]}}}
-   :accts {"acct-0" {"e-0" {:value 100 :pending {"tx-1" 100}} }
-           "payer" {"e-0" {:value 100 :pending {"tx-1" -100}}}}})
-
-(deftest close-epoch-test
-  (testing "closing e-1 with static data"
-    (is (= pre-consolidation
-           (close-epoch pre-close-epoch "e-1")))))
-
-(def fully-processed-data
-  {:meta {:current "e-0"}
-   :epochs {"e-1" {:status :consolidated ;; it's done and dusted
-                   :processed {"tx-1" ["acct-0" "payer"]}}}
-   :accts {"acct-0" {"e-0" {:value 100 :pending {"tx-1" 100}} 
-                     "e-1" {:value 200 :processed {"tx-1" 100} :pending {}}}
-           "payer" {"e-0" {:value 100 :pending {"tx-1" -100}}
-                    "e-1" {:value 0 :processed {"tx-1" -100} :pending {}}}}})
-
-(st/instrument)
-
-(deftest post-test
-  (testing "retrieving the right balance for epoch 0"
-    (is (= 100
-            (get-value fully-processed-data
-             :accts
-             "acct-0"
-             "e-0")
-           ))
-    )
-    (testing "retrieving the right balance for epoch 1"
-    (is (= 200
-            (get-value fully-processed-data
-             :accts
-             "acct-0"
-             "e-1")
-           ))
-    )
-  (testing "available balance is correct for acct-0"
-    (is (= 200
-           (get-available-amt fully-processed-data "acct-0"))))
- )
-
-(deftest consolidation-test
-  (testing "consolidation works"
-    (is (= fully-processed-data
-           (consolidate pre-consolidation "e-1")))))
-
-
-
-(def beginning {:epoch {"e-0" {}}})
-
-(def after-create-transaction-file-doc 
-  {:epoch {"e-0" {:state :open}}
-   :txf {"txf-0" {:state :open}}})
-
-(def after-registration-of-transaction-doc
-  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
-   :txf {"txf-0" {:state :open}} })
-
-(def after-client-starts-transction
-  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
-   :txf {"txf-0" {:state :open :pending {"tx-0"}}} }
-  )
-
-(def after-client-has-registered-payer-doc-for-transaction
-  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
-   :txf {"txf-0" {:state :open :pending {"tx-0" ["payer"]}}} }
-  )
-
-(def after-client-has-reserved-amt-on-payer-doc
-  {:epoch {"e-0" {:state :open :txfs ["txf-0"]}}
-   :txf {"txf-0" {:state :open :pending {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
-   :accts {"payer" {"e-0" {:value 0 :pending #{"tx-0"}}}}}
-  )
-
-
-(def pre-mark-as-consolidated
-  {:epoch {"e-0" {:state :consolidated }
-           "e-1" {:state :closed :txfs ["txf-0"]}
-           }
-   :txf {"txf-0" {:state :closed :procesed {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
-   :accts {"payer" {"e-1" -100} 
-           "payee" {"e-1" 100}}})
-
 (defn update-doc
+  "updates a document in the database"
   [db col doc-id f & args]
   (apply update-in db [col doc-id] f args))
 
-(defn mark-epoch-as-consolidated
-  [db epoch]
-  (update-doc db :epoch epoch epoch/consolidate)
+(defn open-connection
+  [db connection file-name]
+   (let [last-epoch (-> db :epochs last key)]
+     (update-doc db :epochs last-epoch epoch/add-txf file-name))
   )
 
-
-(def end-result
-  {:epoch {"e-0" {:state :consolidated }
-           "e-1" {:state :consolidated :txfs ["txf-0"]}
-           }
-   :txf {"txf-0" {:state :closed :procesed {"tx-0" {:from "payer" :to "payee" :amt 100}}}}
-   :accts {"payer" {"e-1" -100} 
-           "payee" {"e-1" 100}}})
-
-(deftest mark-epoch-as-consolidated-test
-  (testing "marking epoch as consolidated"
-    (is (= end-result
-           (mark-epoch-as-consolidated pre-mark-as-consolidated "e-1"))))
-  )
-
-
+(deftest connection-test
+  (testing "that it creates a transaction file in the current epoch"
+    (is (=
+         {:epochs {"e-0" {:txfs {"my-file" 1}}}}
+         (open-connection {:epochs {"e-0" {}}} "me" "my-file")))))

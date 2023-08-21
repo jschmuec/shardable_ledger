@@ -32,6 +32,12 @@
   [e]
   (transition :closed :consolidated e))
 
+(defn add-txf
+  "adds a transaction file to an epoch"
+  [epoch txf]
+  (assoc-in epoch [:txfs txf] 1 )
+  )
+
 (comment
   (st/instrument)
   (consolidate {:state :closed})
