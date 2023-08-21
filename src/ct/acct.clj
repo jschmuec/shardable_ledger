@@ -13,11 +13,16 @@
   [acct tx amt]
   (assoc-in acct [:pending tx] amt))
 
-(defn available-amt
+(defn available
   [acct]
   (let [latest-balance (or (-> acct :vs vals last) 0)]
     (reduce + latest-balance
             (-> acct :pending vals))))
+
+
+(def available-amt 
+  "legacy version" 
+  available)
 
 
 (defn consolidate
