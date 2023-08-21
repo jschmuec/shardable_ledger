@@ -19,6 +19,16 @@
                  (add-doc {"tx-1" {:closed true}} "tx-1" "doc")))))
 
 
+(deftest close-tx-test
+  (testing "that close-tx does close the tx"
+    (is (tx-closed? (close-tx {"tx-1" {:docs #{"doc"}}} "tx-1")
+                    "tx-1"))))
+
+(deftest close-txf-test
+  (testing "that the doc is closed after close-txf"
+    (is (not (txf-open? (close-txf {"tx-1" {:docs #{"doc"}}}))))))
+
+
 
 
 

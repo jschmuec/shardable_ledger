@@ -19,11 +19,25 @@
    {"tx-1" {:closed true}} "tx-1")
 )
 
-(defn add-doc
-  [txf tx doc]
-  {:pre [(txf-open? txf)
-         (tx-open? txf tx)]}
-  (update-in txf [tx :docs] #(conj (or  % #{}) doc)))
+(do
+  (defn add-doc
+    [txf tx doc]
+    {:pre [(txf-open? txf)
+           (tx-open? txf tx)]}
+    (update-in txf [tx :docs] #(conj (or  % #{}) doc)))
 
-(s/fdef add-doc
-  :args (s/cat :txf map? :tx any? :doc any?))
+  (s/fdef add-doc
+    :args (s/cat :txf map? :tx any? :doc any?)))
+
+
+(defn tx-closed?
+  [txf tx]
+  (get-in txf [tx :closed]))
+
+(defn close-tx
+  [txf tx]
+  (assoc-in txf [tx :closed] true))
+
+(defn close-txf
+  [txf]
+  (assoc txf :closed true))
