@@ -11,7 +11,7 @@
             [com.gfredericks.test.chuck :as chuck]
             [ct.acct :as acct]
             [ct.epoch :as epoch]
-            [ct.main :refer :ally]
+            [ct.main :refer :all]
 ))
 
 
@@ -20,7 +20,6 @@
     (is (=
          {:epochs {"e-0" {:txfs {"my-file" 1}}}}
          (open-connection {:epochs {"e-0" {}}} "me" "my-file")))))
-
 
 (deftest account-state-test
   (let [initial-db  {:accts {"payer" {:vs {"e0" 1000}}
@@ -42,3 +41,5 @@
         (testing "balance is unchanged"
           (is (= 500
                  (get-balance db "e0" "payee"))))))))
+
+

@@ -1,7 +1,9 @@
 (ns ct.acct-test
   (:require [clojure.test :refer [deftest testing is]]
-
+            [clojure.spec.test.alpha :as st]
             [ct.acct :as acct]))
+
+(st/instrument)
 
 (def after-reservation
   {:vs {"e-0" 0}

@@ -5,16 +5,6 @@
    )
   )
 
-(defn flag-tx-as-processed
-  [epoch tx-id] 
-
-  (if-let [tx-value (get (:pending epoch) tx-id)]
-          (-> epoch
-              (dissoc :pending tx-id)
-              (assoc-in [:processed tx-id] tx-value))
-          epoch)
-  )
-
 (defn transition
   [from to epoch]
   (assoc epoch :state to))
