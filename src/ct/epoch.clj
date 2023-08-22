@@ -11,6 +11,7 @@
 
 (defn consolidate
   [e]
+  {:pre [(:closed e)]}
   (assoc e :consolidated true))
 
 (defn add-txf
@@ -19,11 +20,6 @@
   (update epoch :txfs #(if % (conj % txf) #{txf} )
           )
   )
-
-(defn get-open-epoch
-  "returns an open epoch from meta-data"
-  [meta-epochs]
-  1)
 
 (comment
   (st/instrument)
