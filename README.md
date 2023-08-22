@@ -73,3 +73,8 @@ Contstraints
 - The available balance is the sum of the latest epoch value and all pending transactions
 
 Note: We don't really need pending transactions on an acct but it makes unwinding transactions that have not been committed more complicated. It's also a nice visibility feature.
+
+Hierarchical Consistency Structures
+====
+
+The ledger use case can be expanded to a portfolio management use case. Each account belongs to a single portfolio. Each portfolio can contain accounts and other ledgers. 
