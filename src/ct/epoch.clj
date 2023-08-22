@@ -11,6 +11,7 @@
 
 (defn consolidate
   [e]
+  {:pre [(:closed e)]}
   (assoc e :consolidated true))
 
 (defn add-txf
