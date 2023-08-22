@@ -20,11 +20,6 @@
           )
   )
 
-(defn get-open-epoch
-  "returns an open epoch from meta-data"
-  [meta-epochs]
-  1)
-
 (comment
   (st/instrument)
   (consolidate {:state :closed})

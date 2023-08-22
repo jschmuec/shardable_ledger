@@ -14,18 +14,10 @@
             [ct.acct :as acct]
             [ct.epoch :as epoch]
             [ct.main :refer :all]
-))
+            )
+  (:import (java.util.regex Pattern)))
 
 (st/instrument)
-
-(deftest connection-test
-  (testing "that it creates a transaction file in the current epoch"
-    (is (= [{:meta {:open-epoch 1},
-             :epochs {1 {:txfs #{"my-file"}}}}
-            1
-            ]
-         (open-connection {:meta {:open-epoch 1}}
-                          "my-file")))))
 
 (deftest full-transaction-test
   (let [tf "test-file"
@@ -61,6 +53,30 @@
                  (get-balance db epoch-id "payee")))
           )))
     ))
+
+
+(deftest connection-test
+  (testing "that it creates a transaction file in the current epoch"
+    (is (= [{:meta {:open-epoch 1},
+             :epochs {1 {:txfs #{"my-file"}}}}
+            1
+            ]
+         (open-connection {:meta {:open-epoch 1}}
+                          "my-file"))))
+  (testing "that it creates a new epoch if the current one is closed"
+    (is (= [{:meta {:open-epoch 2}
+             :epochs {1 {:closed true},
+                      2 {:txfs #{"my-file"}}}}
+            2]
+           (open-connection {:meta {:open-epoch 2}, 
+                             :epochs {1 {:closed true}}}
+                            "my-file")))))
+
+(deftest consolidate-acct-test
+  (testing "fails if txf isn't closed"
+    (is (thrown-with-msg? AssertionError (->  "Assert failed: (epoch-closed? db epoch-id)"
+                                              Pattern/quote Pattern/compile) 
+                (consolidate-acct {} 0 "payer" "tx-1")))))
 
 (deftest ^:pending pending-tests
   (testing "that epoch cannot be closed if not all txfs are closed"))
