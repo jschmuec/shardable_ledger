@@ -24,7 +24,7 @@ On connect
 
 Sample of a transaction file with one open tarnsaction "tx-2" and a committed transaction "tx-1".
 
-```clojure
+```edn
 {:open {"tx-2" #{"payer-acct" "payee-acct"}} :committed {"tx-1" #{"a-acct" "b-acct"}}}
 ```
 
@@ -32,7 +32,9 @@ Sample of a transaction file with one open tarnsaction "tx-2" and a committed tr
 
 Valid epoch looks like this
 
-`{:state :open :txfs {"txf-id" "filename"}}`
+```edn
+{:state :open :txfs {"txf-id" "filename"}}
+```
 
 Where there is a document "filename" in the "txfs" collection.
 
