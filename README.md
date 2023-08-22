@@ -77,4 +77,4 @@ Note: We don't really need pending transactions on an acct but it makes unwindin
 Hierarchical Consistency Structures
 ====
 
-The ledger use case can be expanded to a portfolio management use case. Each account belongs to a single portfolio. Each portfolio can contain accounts and other ledgers. 
+**WIP**: The ledger use case might be expandable to a portfolio management use case. Each account belongs to a single portfolio. Each portfolio can contain accounts and other ledgers. Because portfolios need to be consistent, even if securities/positions are transfered between two accounts/subportfolios, the full set of portfolios could be included in the consolidation step. However, this will make the system slower as the number of views on the portfolio shrinks. Instead, we can store the aggregated value for each portfolio at the end of a given epoch and update these values offline. This means that any two portfolios can be consistently aggregated by choosing the latest epoch that is updated in both.
