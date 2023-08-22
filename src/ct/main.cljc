@@ -1,35 +1,19 @@
 (ns ct.main
   (:require
    [clojure.algo.monads :refer [domonad maybe-m]]
+   [ct.db :refer :all]
    [ct.acct :as acct]
    [ct.epoch :as epoch]
    [ct.txf :as txf]
 ))
 
-;; sample db functions. We can push these later into multimethods
-(defn update-doc
-  "updates a document in the database"
-  [db col doc-id f & args]
-  (apply update-in db [col doc-id] f args))
-
-(defn get-doc
-  "retrieves a doc from the db"
-  [db col doc]
-  (get-in db [col doc]))
-
-(defn f [x]
-  (domonad maybe-m
-           [epochs (:epochs {})
-            last-e (last epochs)]
-           (key last-e)))
-
 (defn open-connection
   [db file-name]
-  (domonad maybe-m
-              [epochs  (:epochs  db)
-               last-e (last epochs)
-               last-e-key (key last-e)]
-              (update-doc db :epochs (or last-e-key "e0") epoch/add-txf file-name))
+  (let [
+        [db epoch-id] (process-doc db :meta :open-epoch epoch/get-open-epoch)
+        db (update-doc db :epochs epoch-id epoch/add-txf file-name)]
+    [db epoch-id]
+    )
   )
 
 
@@ -42,6 +26,27 @@
   [db epoch acct]
   (->  (get-doc db :accts acct)
        (acct/balance epoch)))
+
+(defn close-tx
+  "marks a transaction as closed"
+  [db txf-id tx-id]
+  (update-doc db :txfs txf-id txf/close-tx tx-id)
+  )
+
+(defn mark-epoch-closed
+  "marks an epoch as closed"
+  [db epoch-id]
+  (update-doc db :epochs epoch-id epoch/close))
+
+(defn consolidate-acct
+  "consolidates a tx into an acct"
+  [db epoch acct-id tx-id]
+  (update-doc db :accts acct-id acct/consolidate epoch tx-id))
+
+(defn mark-epoch-consolidated
+  "marks epoch doc as consolidated"
+  [db epoch-id]
+  (update-doc db :epochs epoch-id epoch/consolidate ))
 
 (defn get-available
   [db acct]

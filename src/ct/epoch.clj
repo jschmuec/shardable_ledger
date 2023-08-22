@@ -5,28 +5,25 @@
    )
   )
 
-(defn transition
-  [from to epoch]
-  (assoc epoch :state to))
-
-(s/fdef transition
-  :args (s/and (s/cat :from any? :to any? :epoch map?)
-               #(= (:from %) (:state (:epoch %))))
-  )
-
 (defn close
   [e]
-  (transition :open :closed e))
+  (assoc e :closed true))
 
 (defn consolidate
   [e]
-  (transition :closed :consolidated e))
+  (assoc e :consolidated true))
 
 (defn add-txf
   "adds a transaction file to an epoch"
   [epoch txf]
-  (assoc-in epoch [:txfs txf] 1 )
+  (update epoch :txfs #(if % (conj % txf) #{txf} )
+          )
   )
+
+(defn get-open-epoch
+  "returns an open epoch from meta-data"
+  [meta-epochs]
+  1)
 
 (comment
   (st/instrument)
