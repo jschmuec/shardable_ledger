@@ -73,3 +73,8 @@ Contstraints
 - The available balance is the sum of the latest epoch value and all pending transactions
 
 Note: We don't really need pending transactions on an acct but it makes unwinding transactions that have not been committed more complicated. It's also a nice visibility feature.
+
+Hierarchical Consistency Structures
+====
+
+**WIP**: The ledger use case might be extendable to a portfolio management use case. Each account belongs to a single portfolio. Each portfolio can contain accounts and other ledgers. Because portfolios need to be consistent, even if securities/positions are transfered between two accounts/subportfolios, the full set of portfolios could be included in the consolidation step. However, this will make the system slower as the number of views on the portfolio shrinks. Instead, we can store the aggregated value for each portfolio at the end of a given epoch and update these values offline. This means that any two portfolios can be consistently aggregated by choosing the latest epoch that is updated in both.

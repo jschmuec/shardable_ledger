@@ -56,6 +56,27 @@
             ))))
     ))
 
+(deftest individual-steps-test
+  (let [tf "test-file"
+        tx-id "tx-1"
+        payer "payer"
+        payee "payee"
+        [db epoch-id] (open-connection {} tf)
+        expected [{:epochs {0 {:txfs #{"test-file"}}}} 0]
+        ]
+    (testing "open-connection"
+      (is (= expected
+             (open-connection {} tf)
+             ))
+      (let [[pre-db epoch-id] expected
+            db (add-doc-to-tx db tf tx-id payer)
+            expected  {:epochs {0 {:txfs #{"test-file"}}},          
+                       :txfs {"test-file" {"tx-1" {:docs #{"payer"}}}}}]
+        (testing "add payer doc to transaction file (txf)"
+          (is (= expected
+                 db)))))
+    ))
+
 
 (deftest connection-test
   (testing "that it creates a transaction file in the current epoch"
