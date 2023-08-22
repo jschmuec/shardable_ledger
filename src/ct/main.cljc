@@ -36,9 +36,20 @@
   (update-doc db :txfs txf-id txf/close-tx tx-id)
   )
 
+(defn close-txf
+  "marks a txf as closed"
+  [db txf-id]
+  (update-doc db :txfs txf-id #(assoc % :closed true)))
+
+(defn all-txfs-closed?
+  [db epoch-id]
+  (every? :closed (map #(get-doc db :txfs %)
+                       (-> (get-doc db :epochs epoch-id) :txfs))))
+
 (defn mark-epoch-closed
   "marks an epoch as closed"
   [db epoch-id]
+  {:pre [(all-txfs-closed? db epoch-id)]}
   (update-doc db :epochs epoch-id epoch/close))
 
 (defn- epoch-closed?
