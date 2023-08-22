@@ -27,7 +27,7 @@
     (update-in txf [tx :docs] #(conj (or  % #{}) doc)))
 
   (s/fdef add-doc
-    :args (s/cat :txf map? :tx any? :doc any?)))
+    :args (s/cat :txf (s/nilable map?) :tx any? :doc any?)))
 
 
 (defn tx-closed?
