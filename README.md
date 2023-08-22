@@ -24,13 +24,17 @@ On connect
 
 Sample of a transaction file with one open tarnsaction "tx-2" and a committed transaction "tx-1".
 
-`{:open {"tx-2" #{"payer-acct" "payee-acct"}} :committed {"tx-1" #{"a-acct" "b-acct"}}}`
+```edn
+{:open {"tx-2" #{"payer-acct" "payee-acct"}} :committed {"tx-1" #{"a-acct" "b-acct"}}}
+```
 
 2. Register transaction file in latest open epoch, if there is no open epoch create one
 
 Valid epoch looks like this
 
-`{:state :open :txfs {"txf-id" "filename"}}`
+```edn
+{:state :open :txfs {"txf-id" "filename"}}
+```
 
 Where there is a document "filename" in the "txfs" collection.
 
