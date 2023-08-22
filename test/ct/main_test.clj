@@ -14,11 +14,31 @@
             [ct.main :refer :all]
 ))
 
+(st/instrument)
+
 (deftest connection-test
   (testing "that it creates a transaction file in the current epoch"
     (is (=
          {:epochs {"e-0" {:txfs {"my-file" 1}}}}
-         (open-connection {:epochs {"e-0" {}}} "me" "my-file")))))
+         (open-connection {:epochs {"e-0" {}}} "my-file")))))
+
+(deftest full-transaction-test
+  (let [tf "test-file"
+        tx-id "tx-1"
+        payer "payer"
+        payee "payee"
+        db (open-connection {} tf)
+        db (add-doc-to-tx db tf tx-id payer)
+        db (advise db tf tx-id payer -100)
+        db (add-doc-to-tx db tf tx-id payee)
+        db (advise db tf tx-id payee 100)]
+    (testing "available amt payer is -100"
+      (is (= -100
+             (get-available db payer))))
+    (testing "available amt payee is 100"
+      (is (= 100
+             (get-available db payee))))
+    ))
 
 
 

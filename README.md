@@ -10,11 +10,15 @@ Each credit transfer is decompossed into multiple steps:
 
 The solution relies on the fact that these operations are commutative, i.e. it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
 
-This is currently under construction to transfer to a new simplified storage structure. See `acct_test.clj` for examples. Later you can start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
+Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
-# Algorithm 
+The algorithm works because reserving/advising money from/to an account is comutative. A similar algo would be possible if it could be made to operate on documents always in the same order. 
 
-## On connect
+Algorithm 
+====
+
+On connect
+---
 
 1. Create transaction file
 
@@ -30,11 +34,13 @@ Valid epoch looks like this
 
 Where there is a document "filename" in the "txfs" collection.
 
-## On disconnect
+On disconnect
+-------------
 
 1. Flag transaction file as closed
 
-## For each transaction
+For each transaction
+-------------
 
 1. Read transaction file to see if has been closed
 2. If transaction file is closed -> Retry with new connection
@@ -43,7 +49,8 @@ Where there is a document "filename" in the "txfs" collection.
 5. Check if transaction file is still :open. If not revert transaction -> Retry
 5. Mark transaction as closed in transaction file
 
-## On consolidation
+On consolidation
+-------------
 
 1. Take the first closed epoch
 1. Create a new epoch
