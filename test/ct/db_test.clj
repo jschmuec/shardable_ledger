@@ -16,4 +16,8 @@
     (testing "process-doc"
       (is (=
            [{:coll {:doc 43}}, 43]
-           (process-doc {:coll {:doc 42}} :coll :doc #(+ 1 %)))))))
+           (process-doc {:coll {:doc 42}} :coll :doc #(+ 1 %)))))
+    (testing "get-doc"
+      (is (=
+           43
+           (get-doc {:coll {:doc 43}} :coll :doc))))))
