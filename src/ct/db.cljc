@@ -39,7 +39,6 @@
   (apply process-doc-in-map args))
 
 
-
 (defn get-doc
   "retrieves a doc from the db"
   [db col doc]
