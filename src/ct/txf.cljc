@@ -1,8 +1,6 @@
 (ns ct.txf
   (:require [clojure.spec.alpha :as s]))
 
-
-
 (defn txf-open?
   [txf]
   (not (:closed txf)))
