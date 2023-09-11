@@ -1,8 +1,6 @@
 (ns ct.txf
   (:require [clojure.spec.alpha :as s]))
 
-
-
 (defn txf-open?
   [txf]
   (not (:closed txf)))
@@ -19,16 +17,24 @@
    {"tx-1" {:closed true}} "tx-1")
 )
 
+(s/def ::txf-closed any?)
+(s/def ::txf-docs set?)
+(s/def ::txf
+  (s/keys :opt-un [::txf-closed ::txf-docs]))
+
 (do
-  (defn add-doc
-    [txf tx doc]
+  (defn add-docs
+    [txf tx docs]
     {:pre [(txf-open? txf)
            (tx-open? txf tx)]}
-    (update-in txf [tx :docs] #(conj (or  % #{}) doc)))
+    (update-in txf [tx :docs] #(into #{} (concat % docs))))
 
-  (s/fdef add-doc
-    :args (s/cat :txf (s/nilable map?) :tx any? :doc any?)))
+  (s/fdef add-docs
+    :args  (s/cat :txf ::txf-doc :tx any? :docs seq?)))
 
+(defn add-doc
+  [txf tx doc]
+  (add-docs txf tx [doc]))
 
 (defn tx-closed?
   [txf tx]

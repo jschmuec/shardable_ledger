@@ -7,6 +7,8 @@
 
 (defmulti update-doc selector)
 (defmulti process-doc selector)
+(defmulti get-doc selector)
+(defmulti set-doc selector)
 
 (do
   (defn update-doc-in-map
@@ -39,7 +41,22 @@
   (apply process-doc-in-map args))
 
 
-(defn get-doc
+(defn get-doc-in-map
   "retrieves a doc from the db"
   [db col doc]
   (get-in db [col doc]))
+
+(defmethod get-doc java.util.Map
+  [& args]
+  (apply get-doc-in-map args))
+
+(defn set-doc-in-map
+  "sets a doc in a map db"
+  [db col doc v]
+  (assoc-in db [col doc] v))
+
+(defmethod set-doc java.util.Map
+  [& args]
+  (apply set-doc-in-map args))
+
+

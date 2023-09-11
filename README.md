@@ -1,12 +1,18 @@
-Shardable Ledger (SL) is an implemenation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows to run an efficient ledger on a distributed database. Do not confuse this with distributed ledgers which are based on blockchain algorithms.
+Shardable Ledger (SL) is an implemenation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows to run an efficient ledger on a distributed database. There is one constraint there, it must be possible to have MUTEX transactions on single documents.
 
-Each credit transfer is decompossed into multiple steps:
+Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger capabilities on potentiall rogue nodes. This isn't something this algorithm tries to achieve.
 
-1) Reserve amount on payer account
-2) Advise amount on payee account
-3) _Batch_ consolidation of all pending amounts into a consistent balance sheet.
+# Overview
 
-The solution relies on the fact that these operations are commutative, i.e. it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
+The algo exploits that a ledger has more relaxed consistency requirements than a generic ACID database. The business requirements are:
+
+- Payers must not be able to spend money twice
+- Payees should be able to spend money as quickly as possible
+- On the balance sheet both sides of a credit transfer/payment should be applied atomically (both or none). This will ensure that assets equal liabilities at any point in time.
+
+This can be achieved by keeping an "available amt" for each account and multiple "balances" for different balance sheet snapshots. The solution relies on the fact that these operations are commutative, i.e. it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
+
+The individual transactions result in updates to the "available amt" on payer and payee accounts. A background job will meanwhile consolidate all the transactions into new balances for the balance sheet. For this it needs to be clear which transactions are included in a particular EOD run and which are not. The easiest way to do this would be to have a single document holding all the transactions for a given balance sheet calculation cycle, which we will call an _epoch_ from now on. However, this documetn would have to be updated by each process connected to the ledger which would be a bottleneck. Therefore, each connection has a transaction file that it uses to record transactions. Before an epoch can be fixed, all these transaction files need to be closed. Closed transaction files prohibit adding new transactions or closing pending transactions.
 
 Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
@@ -62,7 +68,7 @@ On consolidation
 5. Mark epoch as :consolidated
 
 
-Contstraints
+Constraints
 ---
 
 - Transactions are associated into epochs
