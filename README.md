@@ -1,4 +1,6 @@
-Shardable Ledger (SL) is an implemenation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows to run an efficient ledger on a distributed database. Do not confuse this with distributed ledgers which are based on blockchain algorithms.
+Shardable Ledger (SL) is an implemenation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows to run an efficient ledger on a distributed database. There is one constraint there, it must be possible to have MUTEX transactions on single documents. 
+
+Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger capabilities on potentiall rogue nodes. This isn't something this algorithm tries to achieve.
 
 Each credit transfer is decompossed into multiple steps:
 
@@ -62,7 +64,7 @@ On consolidation
 5. Mark epoch as :consolidated
 
 
-Contstraints
+Constraints
 ---
 
 - Transactions are associated into epochs
