@@ -16,6 +16,8 @@ The individual transactions result in updates to the "available amt" on payer an
 
 Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
+The below is a slightly outdated transcript for the algorithm from [main_test.clj](test/ct/main_test.clj).
+
 
 Algorithm 
 ====
