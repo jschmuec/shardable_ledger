@@ -16,7 +16,6 @@ The individual transactions result in updates to the "available amt" on payer an
 
 Start by reading `main_test.clj` it uses static data structures to explain the different steps and their input and output. 
 
-The algorithm works because reserving/advising money from/to an account is comutative. A similar algo would be possible if it could be made to operate on documents always in the same order. 
 
 Algorithm 
 ====
