@@ -1,10 +1,10 @@
 Shardable Ledger (SL) is an implemenation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows to run an efficient ledger on a distributed database. There is one constraint there, it must be possible to have MUTEX transactions on single documents.
 
-Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger capabilities on potentiall rogue nodes. This isn't something this algorithm tries to achieve.
+Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger-like capabilities on potentiall rogue nodes using a probabilistic and slow algorithm. The SL algorithm is fully deterministic and reliable (as far as we know).
 
 # Overview
 
-The algo exploits that a ledger has more relaxed consistency requirements than a generic ACID database. The business requirements are:
+The algo exploits that a ledger has more relaxed consistency requirements than generic ACID. The business requirements are:
 
 - Payers must not be able to spend money twice
 - Payees should be able to spend money as quickly as possible
