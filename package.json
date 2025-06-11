@@ -1,0 +1,20 @@
+{
+  "name": "shardable-ledger-js",
+  "version": "1.0.0",
+  "description": "JavaScript implementation of a shardable ledger that works without multi-document transactions by adopting an epoch-based consistency strategy",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "start": "node src/index.js"
+  },
+  "keywords": ["ledger", "distributed", "epoch", "consistency", "sharding"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "node:test": "*"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
