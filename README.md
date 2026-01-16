@@ -1,8 +1,27 @@
-# Shardable Ledger - JavaScript Implementation
+Shardable Ledger - JavaScript Implementation
+==============================================
 
 Shardable Ledger (SL) is an implementation of a ledger that works without multi-document transactions by adopting an epoch-based consistency strategy. This allows running an efficient ledger on a distributed database. There is one constraint: it must be possible to have MUTEX transactions on single documents.
 
 Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger-like capabilities on potentially rogue nodes using a probabilistic and slow algorithm. The SL algorithm is fully deterministic and reliable (as far as we know).
+
+Limitations of this implementation:
+- This implementation does not connect to an actual database, instead it uses maps with atomic operations to simulate the behaviour of a key/value store with mutex support.
+- To achieve very high throughput and low latency operations, the operations should be implemented using messages. For example a payment approval and processing could be executed asynchroinously using a Stream Processing system like [Apache Flink](https://flink.apache.org/). Note from Joerg Schmuecker: "We used Flink to manage positions backed by a key/value store and replicated data into MongoDB for query and consistency purposes." 
+
+Here is a (simplified) payment authorization process as messages:
+
+```
+1. Request payment 1 reservation (IN) : 
+    State: USD 1'000 w/ USD 200 reserved for payment 1
+    Out: Available balance updated to USD 800
+    Out: Confirm reservation (ID 15) for payment 1
+
+2. Confirm payment (IN): Payment 1 reservation 15 done
+    State: USD 800
+    Out: Account balance USD 800
+    Out: Confirm settlement of payment 1/reservation 15
+```
 
 ## Overview
 
@@ -58,6 +77,8 @@ db = addDocToTx(db, transactionFileName, transactionId, payeeAccount);
 
 // Advise the transaction amounts
 db = advise(db, transactionFileName, transactionId, payerAccount, -amount);
+
+// fail here
 db = advise(db, transactionFileName, transactionId, payeeAccount, amount);
 
 // Close the transaction
