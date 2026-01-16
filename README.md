@@ -5,9 +5,49 @@ Shardable Ledger (SL) is an implementation of a ledger that works without multi-
 
 Do not confuse this with distributed ledgers which are based on blockchain algorithms. Blockchain is a technology aimed at providing ledger-like capabilities on potentially rogue nodes using a probabilistic and slow algorithm. The SL algorithm is fully deterministic and reliable (as far as we know).
 
-Limitations of this implementation:
+Overview
+--------------------------------------------------------------------------------------------------
+
+The algorithm exploits that a ledger has more relaxed consistency requirements than generic ACID. The business requirements are:
+
+- Payers must not be able to spend money twice
+- Payees should be able to spend money as quickly as possible
+- On the balance sheet both sides of a credit transfer/payment should be applied atomically (both or none). This will ensure that assets equal liabilities at any point in time.
+
+This can be achieved by keeping an "available amount" for each account and multiple "balances" for different balance sheet snapshots. The solution relies on the fact that these operations are commutative, i.e., it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
+
+Algorithm
+-------------------------------------------------------------------------------------------
+
+### On Connect
+
+
+1. Create transaction file
+2. Register transaction file in latest open epoch, if there is no open epoch create one
+
+### For Each Transaction
+
+1. Read transaction file to see if it has been closed
+2. If transaction file is closed → Retry with new connection
+3. Create transaction id and register in transaction file as open
+4. Create transaction steps as pending in all the accounts
+5. Check if transaction file is still open. If not revert transaction → Retry
+6. Mark transaction as closed in transaction file
+
+### On Consolidation
+
+1. Take the first closed epoch
+2. Create a new epoch
+3. Mark epoch as closed
+4. Mark all transaction files as closed
+5. Consolidate all closed transactions in transaction files
+6. Mark epoch as consolidated
+
+Limitations of this implementation
+----------------------------------------------------------------------------
+
 - This implementation does not connect to an actual database, instead it uses maps with atomic operations to simulate the behaviour of a key/value store with mutex support.
-- To achieve very high throughput and low latency operations, the operations should be implemented using messages. For example a payment approval and processing could be executed asynchroinously using a Stream Processing system like [Apache Flink](https://flink.apache.org/). Note from Joerg Schmuecker: "We used Flink to manage positions backed by a key/value store and replicated data into MongoDB for query and consistency purposes." 
+- To achieve very high throughput and low latency operations, the operations should be implemented using messages. For example a payment approval and processing could be executed asynchroinously using a Stream Processing system like [Apache Flink](https://flink.apache.org/). Note from Joerg Schmuecker: "We used Flink to manage positions backed by a key/value store and replicated data into MongoDB for query and consistency purposes."
 
 Here is a (simplified) payment authorization process as messages:
 
@@ -23,23 +63,15 @@ Here is a (simplified) payment authorization process as messages:
     Out: Confirm settlement of payment 1/reservation 15
 ```
 
-## Overview
-
-The algorithm exploits that a ledger has more relaxed consistency requirements than generic ACID. The business requirements are:
-
-- Payers must not be able to spend money twice
-- Payees should be able to spend money as quickly as possible
-- On the balance sheet both sides of a credit transfer/payment should be applied atomically (both or none). This will ensure that assets equal liabilities at any point in time.
-
-This can be achieved by keeping an "available amount" for each account and multiple "balances" for different balance sheet snapshots. The solution relies on the fact that these operations are commutative, i.e., it doesn't matter in which order the money is reserved or advised on an account, the net sum is always the same.
-
-## Installation
+Installation
+--------------------------------------------------------
 
 ```bash
 npm install
 ```
 
-## Usage
+Usage
+---------------------------------------------------------------
 
 ### Basic Example
 
@@ -102,32 +134,8 @@ console.log('Alice balance:', getBalance(db, epochId, payerAccount)); // -100
 console.log('Bob balance:', getBalance(db, epochId, payeeAccount));   // 100
 ```
 
-## Algorithm
-
-### On Connect
-
-1. Create transaction file
-2. Register transaction file in latest open epoch, if there is no open epoch create one
-
-### For Each Transaction
-
-1. Read transaction file to see if it has been closed
-2. If transaction file is closed → Retry with new connection
-3. Create transaction id and register in transaction file as open
-4. Create transaction steps as pending in all the accounts
-5. Check if transaction file is still open. If not revert transaction → Retry
-6. Mark transaction as closed in transaction file
-
-### On Consolidation
-
-1. Take the first closed epoch
-2. Create a new epoch
-3. Mark epoch as closed
-4. Mark all transaction files as closed
-5. Consolidate all closed transactions in transaction files
-6. Mark epoch as consolidated
-
-## API Reference
+API Reference
+-------------------------------------------------
 
 ### Core Functions
 
@@ -145,6 +153,7 @@ console.log('Bob balance:', getBalance(db, epochId, payeeAccount));   // 100
 ### Data Structures
 
 #### Database Structure
+
 ```javascript
 {
   meta: {
@@ -175,7 +184,8 @@ console.log('Bob balance:', getBalance(db, epochId, payeeAccount));   // 100
 }
 ```
 
-## Testing
+Testing
+--------------------------------------------------------
 
 Run the test suite:
 
@@ -184,6 +194,7 @@ npm test
 ```
 
 The test suite includes:
+
 - Full transaction flow tests
 - Individual component tests
 - Error handling tests
@@ -221,7 +232,8 @@ This JavaScript implementation maintains the same functional programming princip
 - Comprehensive error handling with preconditions
 
 The main differences from the Clojure version:
+
 - Uses JavaScript's `Set` objects instead of Clojure sets
 - Error handling uses JavaScript's `throw` instead of Clojure's `assert`
 - Module system uses ES6 imports/exports instead of Clojure namespaces
-- Uses native JavaScript objects instead of Clojure maps 
+- Uses native JavaScript objects instead of Clojure maps
