@@ -43,7 +43,7 @@ Algorithm
 5. Consolidate all closed transactions in transaction files
 6. Mark epoch as consolidated
 
-Limitations of this implementation
+Implementation limitations and extensions
 ----------------------------------------------------------------------------
 
 - This implementation does not connect to an actual database, instead it uses maps with atomic operations to simulate the behaviour of a key/value store with mutex support.
